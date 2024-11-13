@@ -1,0 +1,18 @@
+[project]
+name = "donation-box"
+version = "0.1.0"
+description = "Mega tolle SpendenBox"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi[all]>=0.115.5",
+    "mypy>=1.13.0",
+    "pre-commit>=4.0.1",
+    "ruff>=0.7.3",
+]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+extend-select = ["E501"]
