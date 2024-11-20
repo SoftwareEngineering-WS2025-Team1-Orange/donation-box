@@ -34,4 +34,4 @@ jobs:
         run: uv sync --frozen --no-install-project --no-dev
 
       - name: Lint
-        run: uv run ruff
+        run: uv run ruff check
