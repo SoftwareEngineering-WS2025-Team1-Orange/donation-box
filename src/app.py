@@ -2,7 +2,7 @@ import websocket
 import subprocess
 import json
 from app.utils import settings
-from app.core import event_loop
+from app.core.event_loop import event_loop
 
 running = False
 

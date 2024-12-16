@@ -18,3 +18,6 @@ def route(event: str):
     def decorator(func):
         print(f"Adding route for {event}")
         route_store.add_route(event, func)
+        return func
+
+    return decorator
