@@ -36,7 +36,7 @@ RUN docker --version
 WORKDIR /app
 
 # Copy packages and application
-COPY --from=builder /app/.venv .venv
+COPY --from=builder //.venv .venv
 COPY src/ src/
 
 # Set path to venv to allow uvicorn command to be resolved
