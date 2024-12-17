@@ -36,10 +36,10 @@ RUN docker --version
 WORKDIR /app
 
 # Copy packages and application
-COPY --from=builder //.venv .venv
+COPY --from=builder /app/.venv .venv
 COPY src/ src/
 
 # Set path to venv to allow uvicorn command to be resolved
 ENV PATH="/app/.venv/bin:$PATH"
 
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["python", "src/app.py"]
