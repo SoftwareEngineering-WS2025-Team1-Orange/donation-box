@@ -1,19 +1,36 @@
 [project]
-name = "donation-box"
+name = "donationbox"
 version = "0.1.0"
 description = "Mega tolle SpendenBox"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "fastapi[all]>=0.115.5",
-    "mypy>=1.13.0",
-    "pre-commit>=4.0.1",
+    "bright-ws>=0.1.0",
     "pydantic-settings>=2.6.1",
     "python-dotenv>=1.0.1",
     "rel>=0.4.9.19",
-    "ruff>=0.7.3",
     "websocket-client>=1.8.0",
 ]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.13.0",
+    "pre-commit>=4.0.1",
+    "ruff>=0.7.3",
+]
+
+[tool.uv.sources]
+bright-ws = { workspace = true }
+
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/donationbox"]
 
 [tool.ruff]
 line-length = 120
