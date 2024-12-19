@@ -27,16 +27,16 @@ def dispatch_event(routes: dict[str: Callable]):
 def collect_routes(config: BrightConfig):
     routes = {}
     for router in config.routes:
-        for key in router.store.keys():
-            routes[key] = router.store[key]
+        for key in router._store.keys():
+            routes[key] = router._store[key]
     return routes
 
 
 def collect_lifecycle(config: BrightConfig):
     lifecycle = {}
     for life in config.lifecycle:
-        for key in life.store.keys():
-            lifecycle[key] = life.store[key]
+        for key in life._store.keys():
+            lifecycle[key] = life._store[key]
     return lifecycle
 
 
