@@ -1,32 +1,20 @@
-import websocket
 import subprocess
 import json
-from app.utils import settings
-from app.core.event_loop import event_loop
+
+from bright_ws.config.config import BrightConfig
+from bright_ws.core.bright_ws import BrightWs
+from utils.settings import settings
+
+from lifecycle.lifecycle import lifecycle
+from routes.auth_route import auth_router
 
 running = False
+
 
 def on_message(ws, message):
     print(f"Received message {message}")
     if message == "Send Status":
         ws.send(json.dumps({"status": "RUNNING" if running else "READY"}))
-
-
-def on_error(ws, error):
-    print(f"Error: {error}")
-
-
-def on_close(ws, close_status_code, close_msg):
-    print("Closed connection")
-
-
-def on_open(ws: websocket.WebSocketApp):
-    dict = {
-        "event": "authRequest",
-        "data": {
-            "token": settings.jwt}
-    }
-    ws.send(json.dumps(dict))
 
 
 def run_container():
@@ -42,10 +30,16 @@ def stop_container():
     subprocess.run("docker rm monero", shell=True)
 
 
+bright_ws = BrightWs(config=BrightConfig(
+    host_url=settings.mainframe_socket_url,
+    lifecycle=[lifecycle],
+    routes=[auth_router],
+))
+
+
 def main():
-    event_loop()
+    bright_ws.start()
 
 
 if __name__ == "__main__":
     main()
-

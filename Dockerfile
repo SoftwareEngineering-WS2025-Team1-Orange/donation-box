@@ -5,11 +5,14 @@ WORKDIR /app
 # Enable bytecode compilation
 ENV UV_COMPILE_BYTECODE=1
 
-# Copy pyproject.toml and lockfile for package installation
-COPY pyproject.toml uv.lock ./
+# Build sub-dependencies
+COPY packages/ packages/
+RUN cd packages/bright-ws && uv build --package bright-ws
 
-# Install with frozen lock
+# Copy and install application dependencies with frozen lock
+COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-install-project --no-dev
+RUN uv pip install /app/packages/bright-ws/dist/bright_ws-*.whl
 
 FROM python:3.13-bookworm AS runner
 
@@ -42,4 +45,4 @@ COPY src/ src/
 # Set path to venv to allow uvicorn command to be resolved
 ENV PATH="/app/.venv/bin:$PATH"
 
-CMD ["python", "src/app.py"]
+CMD ["python", "src/donationbox/app.py"]
