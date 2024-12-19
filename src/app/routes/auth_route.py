@@ -14,5 +14,5 @@ def authenticate_request(ws: WebSocketApp):
 
 
 @route(event="authResponse")
-def authenticate_response(message: dict) -> str:
+def authenticate_response(ws: WebSocketApp, message: dict) -> str:
     pass

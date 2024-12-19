@@ -7,5 +7,5 @@ from ..utils.route_store import route_store
 
 @dispatcher
 def dispatch_event(ws: WebSocketApp, message: Event):
-    route_store.get_route(message.event)(message.data)
+    route_store.get_route(message.event)(ws, message.data)
 
