@@ -17,6 +17,7 @@ class StatusUpdateResponseEnum(str, Enum):
 
 class StartMiningResponseEnum(str, Enum):
     STARTED_MINING = 'started_mining'
+    ERR_CONTAINER_ALREADY_RUNNING = 'ERR_container_already_running'
     ERR_IMAGE_NOT_FOUND = 'ERR_image_not_found'
     ERR_COULD_NOT_START_CONTAINER = 'ERR_could_not_start_container'
     ERR_CONNECTION_TO_MINING_POOL_FAILED = 'ERR_connection_to_mining_pool_failed'

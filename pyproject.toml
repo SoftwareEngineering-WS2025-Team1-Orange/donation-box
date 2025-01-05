@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "bright-ws>=0.1.0",
+    "docker>=7.1.0",
     "pydantic-settings>=2.6.1",
     "python-dotenv>=1.0.1",
     "rel>=0.4.9.19",

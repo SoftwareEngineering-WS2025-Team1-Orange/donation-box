@@ -1,4 +1,3 @@
-
 from bright_ws import Router
 from websocket import WebSocketApp
 
