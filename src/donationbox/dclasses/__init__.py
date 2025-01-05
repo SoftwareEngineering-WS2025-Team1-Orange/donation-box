@@ -1,6 +1,7 @@
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 
 
 class AuthResponseEnum(str, Enum):
@@ -71,3 +72,37 @@ class StartMiningResponse:
 class StopMiningResponse:
     status: bool
     response: StopMiningResponseEnum
+
+@dataclass
+class Production:
+    solar: int
+    add: int
+    grid: int
+
+@dataclass
+class Consumption:
+    battery: int
+    house: int
+    wallbox: int
+
+@dataclass
+class ContainerStatusUpdateResponse:
+    time: datetime  # Using datetime for date-time format
+    runningContainers: List[str]
+    finishedContainers: List[str]
+    abortedContainers: List[str]
+    notFoundContainers: List[str]
+
+
+@dataclass
+class SolarStatusUpdateResponse:
+    time: datetime
+    sysStatus: int
+    stateOfCharge: int
+    production: Production
+    consumption: Consumption
+
+@dataclass
+class ContainerStatusUpdateRequest:
+    containerNames: List[str]
+
