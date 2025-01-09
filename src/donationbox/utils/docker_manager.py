@@ -22,6 +22,9 @@ class DockerManager:
                     continue
         raise RuntimeError("Could not find a free port")
 
+    def get_container_port(self, container_name):
+        return self.client.containers.get(container_name).ports['8000/tcp'][0]['HostPort']
+
     def add_monitored_container(self, container_name: str):
         self.monitored_containers.append(container_name)
 

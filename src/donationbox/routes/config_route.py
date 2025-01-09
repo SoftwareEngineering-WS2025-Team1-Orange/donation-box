@@ -11,7 +11,7 @@ from dclasses import AddConfigurationRequest, AddConfigurationResponse
 from utils import docker_manager
 from utils import settings
 
-from donationbox.dclasses import StartMiningRequest
+from donationbox.dclasses import StartContainerRequest
 
 config_router = Router()
 
@@ -52,19 +52,18 @@ def status_request(message: AddConfigurationRequest, ws: WebSocketApp) -> AddCon
     :param ws: WebSocketApp instance.
     """
     def thread_logic():
-        host_port = docker_manager.start_container(StartMiningRequest(imageName=message.image_name,
+        container_port = docker_manager.start_container(StartContainerRequest(imageName=message.image_name,
                                                containerName="pluginContainer",
                                                environmentVars={"api_passkey": settings.passkey}),
                                                isPluginContainer=True)
 
-        health_url = f"http://localhost:{host_port}/health"
+        health_url = f"http://localhost:{container_port}/health"
         timeout = 60
         interval = 5
 
         wait_for_ok(health_url, timeout, interval)
 
-        load_config_url = f"http://localhost:{host_port}/load_config"
-        poll_url = f"http://localhost:{host_port}/poll"
+        load_config_url = f"http://localhost:{container_port}/load_config"
 
         try:
             payload = {

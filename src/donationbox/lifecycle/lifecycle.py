@@ -32,7 +32,6 @@ def on_open(ws: WebSocketApp):
 
     def print_message():
         while True:
-            #print("Lukas is doof.")
             time.sleep(10)
 
     thread = threading.Thread(target=print_message)

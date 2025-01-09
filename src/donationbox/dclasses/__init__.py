@@ -1,4 +1,3 @@
-import datetime
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional, Dict, List
@@ -91,39 +90,6 @@ class StartContainerResponse:
 class StopContainerResponse:
     status: bool
     response: StopContainerResponseEnum
-
-@dataclass
-class Production:
-    solar: int
-    add: int
-    grid: int
-
-@dataclass
-class Consumption:
-    battery: int
-    house: int
-    wallbox: int
-
-@dataclass
-class ContainerStatusUpdateResponse:
-    time: datetime  # Using datetime for date-time format
-    runningContainers: List[str]
-    finishedContainers: List[str]
-    abortedContainers: List[str]
-    notFoundContainers: List[str]
-
-
-@dataclass
-class SolarStatusUpdateResponse:
-    time: datetime
-    sysStatus: int
-    stateOfCharge: int
-    production: Production
-    consumption: Consumption
-
-@dataclass
-class ContainerStatusUpdateRequest:
-    containerNames: List[str]
 
 @dataclass
 class AddConfigurationRequest:

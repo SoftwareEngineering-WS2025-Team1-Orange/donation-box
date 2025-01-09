@@ -23,7 +23,6 @@ bright_ws = BrightWs(config=BrightConfig(
             status_router,
             deploy_router,
             config_router,
-            poll_router,
             ],
 ))
 
