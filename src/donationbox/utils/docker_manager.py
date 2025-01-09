@@ -23,8 +23,17 @@ class DockerManager:
         raise RuntimeError("Could not find a free port")
 
     def get_container_port(self, container_name):
-        return self.client.containers.get(container_name).ports['8000/tcp'][0]['HostPort']
-
+        try:
+            return self.client.containers.get(container_name).ports['8000/tcp'][0]['HostPort']
+        except docker.errors.NotFound:
+            print(f'Container {container_name} not found', file=sys.stderr)
+            return None
+        except KeyError:
+            print(f'Port mapping for container {container_name} not found', file=sys.stderr)
+            return None
+        except Exception as e:
+            print(f'An unexpected error occurred: {e}', file=sys.stderr)
+            return None
     def add_monitored_container(self, container_name: str):
         self.monitored_containers.append(container_name)
 
