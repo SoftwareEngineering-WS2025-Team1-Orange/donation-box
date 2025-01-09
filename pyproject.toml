@@ -5,6 +5,7 @@ description = "Mega tolle SpendenBox"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "aiohttp>=3.11.11",
     "bright-ws>=0.1.0",
     "docker>=7.1.0",
     "pydantic-settings>=2.6.1",

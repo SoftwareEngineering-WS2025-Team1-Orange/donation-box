@@ -1,3 +1,4 @@
+import socket
 import sys
 import docker
 from dclasses import StartContainerRequest, ContainerStatusEnum
@@ -11,24 +12,48 @@ class DockerManager:
 
     def get_monitored_containers(self):
         return self.monitored_containers
+    def find_free_port(self, start_port=50000):
+        for port in range(start_port, 65535):
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                try:
+                    s.bind(("0.0.0.0", port))
+                    return port
+                except OSError:
+                    continue
+        raise RuntimeError("Could not find a free port")
 
     def add_monitored_container(self, container_name: str):
         self.monitored_containers.append(container_name)
 
-    def start_container(self, request: StartContainerRequest):
+    def start_container(self, request: StartContainerRequest, isPluginContainer=False):
         try:
             if self.exists(request.containerName):
+                if request.containerName == "pluginContainer":
+                    return self.client.containers.get(request.containerName).ports['8000/tcp'][0]['HostPort']
                 self.client.containers.get(request.containerName).start()
-                return self.client.containers.get(request.containerName)
+                return 0
 
-            container = self.client.containers.run(
-                request.imageName,
-                name=request.containerName,
-                environment=request.environmentVars,
-                detach=True,
-            )
-            self.monitored_containers.append(request.containerName)
-            return container
+            if not isPluginContainer:
+                container = self.client.containers.run(
+                    request.imageName,
+                    name=request.containerName,
+                    environment=request.environmentVars,
+                    detach=True
+                )
+                self.monitored_containers.append(request.containerName)
+                return 0
+
+            else:
+                host_port = self.find_free_port()
+                container = self.client.containers.run(
+                    request.imageName,
+                    name=request.containerName,
+                    environment=request.environmentVars,
+                    ports={'8000/tcp': host_port},
+                    detach=True,
+                )
+                return host_port
+
         except docker.errors.ImageNotFound:
             print(f'Image {request.imageName} not found', file=sys.stderr)
             return None
