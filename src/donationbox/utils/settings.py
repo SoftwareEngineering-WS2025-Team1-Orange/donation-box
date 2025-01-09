@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     mainframe_socket_url: str
     jwt: str
     passkey: str
+    encryption_key: bytes
 
     model_config = SettingsConfigDict(case_sensitive=False)
 
