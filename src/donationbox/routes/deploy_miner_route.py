@@ -16,20 +16,16 @@ manager = DockerManager()
 @deploy_router.route(event="startMiningRequest")
 def startMining(message: dict, ws: WebSocketApp):
     parsed_data = StartMiningRequest(**message)
-    #print(f"Starting container {parsed_data.containerName}")
     if manager.get_container_status(parsed_data.containerName) == ContainerStatus.RUNNING:
-        #print(f"Starting container {parsed_data.containerName}: ERR_CONTAINER_ALREADY_RUNNING")
         ws.send(json.dumps(asdict(StartMiningResponse(success=False,
                                                       response=StartMiningResponseEnum.ERR_CONTAINER_ALREADY_RUNNING))))
         return
 
     success = manager.start_container(parsed_data)
     if not success:
-        #print(f"Starting container {parsed_data.containerName}: ERR_COULD_NOT_START_CONTAINER")
         ws.send(json.dumps(asdict(StartMiningResponse(success=False,
                                                       response=StartMiningResponseEnum.ERR_COULD_NOT_START_CONTAINER))))
         return
-    #print(f"Starting container {parsed_data.containerName}: success")
     ws.send(json.dumps(asdict(StartMiningResponse(success=True, response=StartMiningResponseEnum.STARTED_MINING))))
 
 
