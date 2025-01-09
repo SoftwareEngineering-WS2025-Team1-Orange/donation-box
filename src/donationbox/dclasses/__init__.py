@@ -1,19 +1,6 @@
 from dataclasses import dataclass
-from datetime import datetime
 from enum import Enum
 from typing import Optional, Dict, List
-
-
-class AuthResponseEnum(str, Enum):
-    SUCCESS = 'success'
-    FAILURE = 'failure'
-
-
-class StatusUpdateResponseEnum(str, Enum):
-    CURRENTLY_MINING = 'currently_mining'
-    ERR_READY_FOR_MINING = 'ERR_ready_for_mining'
-    ERR_NOT_READY_FOR_MINING = 'ERR_not_ready_for_mining'
-    ERR_ERROR = 'ERR_error'
 
 
 class StartMiningResponseEnum(str, Enum):
@@ -32,6 +19,14 @@ class StopMiningResponseEnum(str, Enum):
     ERR_OTHER = 'ERR_other'
 
 
+class ContainerStatusEnum(str, Enum):
+    RUNNING = 'RUNNING',
+    FINISHED = 'FINISHED',
+    CRASHED = 'CRASHED'
+    NOT_FOUND = 'NOT_FOUND'
+    ERROR = 'ERROR'
+
+
 @dataclass
 class AuthRequest:
     username: str
@@ -41,13 +36,36 @@ class AuthRequest:
 @dataclass
 class AuthResponse:
     success: bool
-    response: AuthResponseEnum
+    monitored_containers: List[str]
+
+
+@dataclass
+class Production:
+    solar: int = 0
+    add: int = 0
+    grid: int = 0
+
+
+@dataclass
+class Consumption:
+    battery: int = 0
+    house: int = 0
+    wallbox: int = 0
+
+
+@dataclass
+class SolarStatusUpdateResponse:
+    sysStatus: int = 0
+    stateOfCharge: int = 0
+    production: Production = Production()
+    consumption: Consumption = Consumption()
 
 
 @dataclass
 class StatusUpdateResponse:
-    success: bool
-    response: StatusUpdateResponseEnum
+    time: str
+    solar: SolarStatusUpdateResponse
+    container: Dict[str, ContainerStatusEnum]
 
 
 @dataclass
@@ -72,37 +90,3 @@ class StartMiningResponse:
 class StopMiningResponse:
     status: bool
     response: StopMiningResponseEnum
-
-@dataclass
-class Production:
-    solar: int
-    add: int
-    grid: int
-
-@dataclass
-class Consumption:
-    battery: int
-    house: int
-    wallbox: int
-
-@dataclass
-class ContainerStatusUpdateResponse:
-    time: datetime  # Using datetime for date-time format
-    runningContainers: List[str]
-    finishedContainers: List[str]
-    abortedContainers: List[str]
-    notFoundContainers: List[str]
-
-
-@dataclass
-class SolarStatusUpdateResponse:
-    time: datetime
-    sysStatus: int
-    stateOfCharge: int
-    production: Production
-    consumption: Consumption
-
-@dataclass
-class ContainerStatusUpdateRequest:
-    containerNames: List[str]
-

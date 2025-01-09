@@ -1,24 +1,20 @@
 import sys
-from enum import Enum
 import docker
-from dclasses import StartMiningRequest
+from dclasses import StartMiningRequest, ContainerStatusEnum
 
-
-class ContainerStatus(str, Enum):
-    RUNNING = 'RUNNING',
-    FINISHED = 'FINISHED',
-    CRASHED = 'CRASHED'
-    NOT_FOUND = 'NOT_FOUND'
-    ERROR = 'ERROR'
 
 class DockerManager:
-    existing_containers = []
+    monitored_containers = []
+
     def __init__(self):
         self.client = docker.from_env()
 
+    def get_monitored_containers(self):
+        return self.monitored_containers
 
-    def get_existing_containers(self):
-        return self.existing_containers
+    def add_monitored_container(self, container_name: str):
+        self.monitored_containers.append(container_name)
+
     def start_container(self, request: StartMiningRequest):
         try:
             if self.exists(request.containerName):
@@ -31,7 +27,7 @@ class DockerManager:
                 environment=request.environmentVars,
                 detach=True,
             )
-            self.existing_containers.append(request.containerName)
+            self.monitored_containers.append(request.containerName)
             return container
         except docker.errors.ImageNotFound:
             print(f'Image {request.imageName} not found', file=sys.stderr)
@@ -56,7 +52,9 @@ class DockerManager:
         try:
             container = self.client.containers.get(container_name)
             container.remove()
-            self.existing_containers.remove(container_name)
+            if self.monitored_containers.__contains__(container_name):
+                self.monitored_containers.remove(container_name)
+            print(f"Removed container {container_name}")
             return True
         except docker.errors.NotFound:
             print(f'Container {container_name} not found', file=sys.stderr)
@@ -69,22 +67,20 @@ class DockerManager:
         try:
             container = self.client.containers.get(container_name)
             if container.status == 'running':
-                return ContainerStatus.RUNNING
+                return ContainerStatusEnum.RUNNING
             elif container.status == 'exited':
-                if self.existing_containers.__contains__(container_name):
-                    self.existing_containers.remove(container_name)
                 exit_code = container.attrs['State']['ExitCode']
                 if exit_code == 0:
-                    return ContainerStatus.FINISHED
+                    return ContainerStatusEnum.FINISHED
                 else:
-                    return ContainerStatus.CRASHED
+                    return ContainerStatusEnum.CRASHED
             else:
-                return ContainerStatus.ERROR
+                return ContainerStatusEnum.ERROR
         except docker.errors.NotFound:
-            return ContainerStatus.NOT_FOUND
+            return ContainerStatusEnum.NOT_FOUND
         except docker.errors.APIError as e:
             print(f'Error getting container status: {e}', file=sys.stderr)
-            return ContainerStatus.ERROR
+            return ContainerStatusEnum.ERROR
 
     def exists(self, container_name: str):
         try:
@@ -94,3 +90,6 @@ class DockerManager:
             return False
         except docker.errors.APIError:
             return False
+
+
+docker_manager = DockerManager()
