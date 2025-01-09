@@ -1,6 +1,6 @@
 import sys
 import docker
-from dclasses import StartMiningRequest, ContainerStatusEnum
+from dclasses import StartContainerRequest, ContainerStatusEnum
 
 
 class DockerManager:
@@ -15,7 +15,7 @@ class DockerManager:
     def add_monitored_container(self, container_name: str):
         self.monitored_containers.append(container_name)
 
-    def start_container(self, request: StartMiningRequest):
+    def start_container(self, request: StartContainerRequest):
         try:
             if self.exists(request.containerName):
                 self.client.containers.get(request.containerName).start()
@@ -36,7 +36,7 @@ class DockerManager:
             print('Error starting container: {e}', file=sys.stderr)
             return None
 
-    def stop_container(self, request: StartMiningRequest):
+    def stop_container(self, request: StartContainerRequest):
         try:
             container = self.client.containers.get(request.containerName)
             container.stop()

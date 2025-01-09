@@ -3,8 +3,8 @@ from enum import Enum
 from typing import Optional, Dict, List
 
 
-class StartMiningResponseEnum(str, Enum):
-    STARTED_MINING = 'started_mining'
+class StartContainerResponseEnum(str, Enum):
+    STARTED_MINING = 'started_container'
     ERR_CONTAINER_ALREADY_RUNNING = 'ERR_container_already_running'
     ERR_IMAGE_NOT_FOUND = 'ERR_image_not_found'
     ERR_COULD_NOT_START_CONTAINER = 'ERR_could_not_start_container'
@@ -13,8 +13,8 @@ class StartMiningResponseEnum(str, Enum):
     ERR_OTHER = 'ERR_other'
 
 
-class StopMiningResponseEnum(str, Enum):
-    STOPPED_MINING = 'stopped_mining'
+class StopContainerResponseEnum(str, Enum):
+    STOPPED_MINING = 'stopped_container'
     ERR_CONTAINER_NOT_RUNNING = 'ERR_container_not_running'
     ERR_OTHER = 'ERR_other'
 
@@ -69,24 +69,24 @@ class StatusUpdateResponse:
 
 
 @dataclass
-class StartMiningRequest:
+class StartContainerRequest:
     imageName: str
     containerName: str
     environmentVars: Optional[Dict[str, str]]
 
 
 @dataclass
-class StopMiningRequest:
+class StopContainerRequest:
     containerName: str
 
 
 @dataclass
-class StartMiningResponse:
+class StartContainerResponse:
     success: bool
-    response: StartMiningResponseEnum
+    response: StartContainerResponseEnum
 
 
 @dataclass
-class StopMiningResponse:
+class StopContainerResponse:
     status: bool
-    response: StopMiningResponseEnum
+    response: StopContainerResponseEnum
