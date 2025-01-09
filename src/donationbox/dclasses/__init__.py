@@ -1,23 +1,10 @@
 from dataclasses import dataclass
-from datetime import datetime
 from enum import Enum
 from typing import Optional, Dict, List
 
 
-class AuthResponseEnum(str, Enum):
-    SUCCESS = 'success'
-    FAILURE = 'failure'
-
-
-class StatusUpdateResponseEnum(str, Enum):
-    CURRENTLY_MINING = 'currently_mining'
-    ERR_READY_FOR_MINING = 'ERR_ready_for_mining'
-    ERR_NOT_READY_FOR_MINING = 'ERR_not_ready_for_mining'
-    ERR_ERROR = 'ERR_error'
-
-
-class StartMiningResponseEnum(str, Enum):
-    STARTED_MINING = 'started_mining'
+class StartContainerResponseEnum(str, Enum):
+    STARTED_MINING = 'started_container'
     ERR_CONTAINER_ALREADY_RUNNING = 'ERR_container_already_running'
     ERR_IMAGE_NOT_FOUND = 'ERR_image_not_found'
     ERR_COULD_NOT_START_CONTAINER = 'ERR_could_not_start_container'
@@ -26,10 +13,18 @@ class StartMiningResponseEnum(str, Enum):
     ERR_OTHER = 'ERR_other'
 
 
-class StopMiningResponseEnum(str, Enum):
-    STOPPED_MINING = 'stopped_mining'
+class StopContainerResponseEnum(str, Enum):
+    STOPPED_MINING = 'stopped_container'
     ERR_CONTAINER_NOT_RUNNING = 'ERR_container_not_running'
     ERR_OTHER = 'ERR_other'
+
+
+class ContainerStatusEnum(str, Enum):
+    RUNNING = 'RUNNING',
+    FINISHED = 'FINISHED',
+    CRASHED = 'CRASHED'
+    NOT_FOUND = 'NOT_FOUND'
+    ERROR = 'ERROR'
 
 
 @dataclass
@@ -41,68 +36,66 @@ class AuthRequest:
 @dataclass
 class AuthResponse:
     success: bool
-    response: AuthResponseEnum
+    monitored_containers: List[str]
+
+
+@dataclass
+class Production:
+    solar: int = 0
+    add: int = 0
+    grid: int = 0
+
+
+@dataclass
+class Consumption:
+    battery: int = 0
+    house: int = 0
+    wallbox: int = 0
+
+
+@dataclass
+class SolarStatusUpdateResponse:
+    sysStatus: int = 0
+    stateOfCharge: int = 0
+    production: Production = Production()
+    consumption: Consumption = Consumption()
 
 
 @dataclass
 class StatusUpdateResponse:
-    success: bool
-    response: StatusUpdateResponseEnum
+    time: str
+    solar: SolarStatusUpdateResponse
+    container: Dict[str, ContainerStatusEnum]
 
 
 @dataclass
-class StartMiningRequest:
+class StartContainerRequest:
     imageName: str
     containerName: str
     environmentVars: Optional[Dict[str, str]]
 
 
 @dataclass
-class StopMiningRequest:
+class StopContainerRequest:
     containerName: str
 
 
 @dataclass
-class StartMiningResponse:
+class StartContainerResponse:
     success: bool
-    response: StartMiningResponseEnum
+    response: StartContainerResponseEnum
 
 
 @dataclass
-class StopMiningResponse:
+class StopContainerResponse:
     status: bool
-    response: StopMiningResponseEnum
+    response: StopContainerResponseEnum
 
 @dataclass
-class Production:
-    solar: int
-    add: int
-    grid: int
+class AddConfigurationRequest:
+    image_name: str
+    plugin_configuration: Optional[Dict[str, str]]
 
 @dataclass
-class Consumption:
-    battery: int
-    house: int
-    wallbox: int
-
-@dataclass
-class ContainerStatusUpdateResponse:
-    time: datetime  # Using datetime for date-time format
-    runningContainers: List[str]
-    finishedContainers: List[str]
-    abortedContainers: List[str]
-    notFoundContainers: List[str]
-
-
-@dataclass
-class SolarStatusUpdateResponse:
-    time: datetime
-    sysStatus: int
-    stateOfCharge: int
-    production: Production
-    consumption: Consumption
-
-@dataclass
-class ContainerStatusUpdateRequest:
-    containerNames: List[str]
-
+class AddConfigurationResponse:
+    success: bool

@@ -1,47 +1,30 @@
-import json
-from dataclasses import asdict
-
 from bright_ws import Router
 from websocket import WebSocketApp
-from dclasses import StartMiningRequest, StartMiningResponse, StopMiningRequest, StopMiningResponse, \
-    StopMiningResponseEnum, StartMiningResponseEnum
+from dclasses import StartContainerRequest, StartContainerResponse, StopContainerRequest, StopContainerResponse, \
+    StopContainerResponseEnum, StartContainerResponseEnum, ContainerStatusEnum
 
-from utils.docker_manager import DockerManager, ContainerStatus
+from utils import docker_manager
 
 deploy_router = Router()
-manager = DockerManager()
 
 
+@deploy_router.route(event="startContainerRequest")
+def startContainer(message: StartContainerRequest, ws: WebSocketApp):
+    if docker_manager.get_container_status(message.containerName) == ContainerStatusEnum.RUNNING:
+        return StartContainerResponse(success=False, response=StartContainerResponseEnum.ERR_CONTAINER_ALREADY_RUNNING)
 
-@deploy_router.route(event="startMiningRequest")
-def startMining(message: dict, ws: WebSocketApp):
-    parsed_data = StartMiningRequest(**message)
-    if manager.get_container_status(parsed_data.containerName) == ContainerStatus.RUNNING:
-        ws.send(json.dumps(asdict(StartMiningResponse(success=False,
-                                                      response=StartMiningResponseEnum.ERR_CONTAINER_ALREADY_RUNNING))))
-        return
-
-    success = manager.start_container(parsed_data)
+    success = docker_manager.start_container(message)
     if not success:
-        ws.send(json.dumps(asdict(StartMiningResponse(success=False,
-                                                      response=StartMiningResponseEnum.ERR_COULD_NOT_START_CONTAINER))))
-        return
-    ws.send(json.dumps(asdict(StartMiningResponse(success=True, response=StartMiningResponseEnum.STARTED_MINING))))
+        return StartContainerResponse(success=False, response=StartContainerResponseEnum.ERR_COULD_NOT_START_CONTAINER)
+    return StartContainerResponse(success=True, response=StartContainerResponseEnum.STARTED_MINING)
 
 
-@deploy_router.route(event="stopMiningRequest")
-def stopMining(message: StopMiningRequest, ws: WebSocketApp):
-    parsed_data = StopMiningRequest(**message)
-    if manager.get_container_status(parsed_data.containerName) != ContainerStatus.RUNNING:
-        ws.send(json.dumps(asdict(StopMiningResponse(status=False,
-                                                     response=StopMiningResponseEnum.ERR_CONTAINER_NOT_RUNNING))))
-        return
-    success = manager.stop_container(parsed_data)
+@deploy_router.route(event="stopContainerRequest")
+def stopContainer(message: StopContainerRequest, ws: WebSocketApp):
+    if docker_manager.get_container_status(message.containerName) != ContainerStatusEnum.RUNNING:
+        return StopContainerResponse(status=False, response=StopContainerResponseEnum.ERR_CONTAINER_NOT_RUNNING)
+
+    success = docker_manager.stop_container(message)
     if not success:
-        ws.send(json.dumps(asdict(StopMiningResponse(status=False, response=StopMiningResponseEnum.ERR_OTHER))))
-        return
-    ws.send(json.dumps(asdict(StopMiningResponse(status=True, response=StopMiningResponseEnum.STOPPED_MINING))))
-
-
-
-
+        return StopContainerResponse(status=False, response=StopContainerResponseEnum.ERR_OTHER)
+    return StopContainerResponse(status=True, response=StopContainerResponseEnum.STOPPED_MINING)

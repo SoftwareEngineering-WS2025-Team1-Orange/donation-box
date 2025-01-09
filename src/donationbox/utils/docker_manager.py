@@ -1,38 +1,71 @@
+import socket
 import sys
-from enum import Enum
 import docker
-from dclasses import StartMiningRequest
+from dclasses import StartContainerRequest, ContainerStatusEnum
 
-
-class ContainerStatus(str, Enum):
-    RUNNING = 'RUNNING',
-    FINISHED = 'FINISHED',
-    CRASHED = 'CRASHED'
-    NOT_FOUND = 'NOT_FOUND'
-    ERROR = 'ERROR'
 
 class DockerManager:
-    existing_containers = []
+    monitored_containers = []
+
     def __init__(self):
         self.client = docker.from_env()
 
+    def get_monitored_containers(self):
+        return self.monitored_containers
+    def find_free_port(self, start_port=50000):
+        for port in range(start_port, 65535):
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                try:
+                    s.bind(("0.0.0.0", port))
+                    return port
+                except OSError:
+                    continue
+        raise RuntimeError("Could not find a free port")
 
-    def get_existing_containers(self):
-        return self.existing_containers
-    def start_container(self, request: StartMiningRequest):
+    def get_container_port(self, container_name):
+        try:
+            return self.client.containers.get(container_name).ports['8000/tcp'][0]['HostPort']
+        except docker.errors.NotFound:
+            print(f'Container {container_name} not found', file=sys.stderr)
+            return None
+        except KeyError:
+            print(f'Port mapping for container {container_name} not found', file=sys.stderr)
+            return None
+        except Exception as e:
+            print(f'An unexpected error occurred: {e}', file=sys.stderr)
+            return None
+    def add_monitored_container(self, container_name: str):
+        self.monitored_containers.append(container_name)
+
+    def start_container(self, request: StartContainerRequest, isPluginContainer=False):
         try:
             if self.exists(request.containerName):
+                if request.containerName == "pluginContainer":
+                    return self.client.containers.get(request.containerName).ports['8000/tcp'][0]['HostPort']
                 self.client.containers.get(request.containerName).start()
-                return self.client.containers.get(request.containerName)
+                return 0
 
-            container = self.client.containers.run(
-                request.imageName,
-                name=request.containerName,
-                environment=request.environmentVars,
-                detach=True,
-            )
-            self.existing_containers.append(request.containerName)
-            return container
+            if not isPluginContainer:
+                self.client.containers.run(
+                    request.imageName,
+                    name=request.containerName,
+                    environment=request.environmentVars,
+                    detach=True
+                )
+                self.monitored_containers.append(request.containerName)
+                return 0
+
+            else:
+                host_port = self.find_free_port()
+                self.client.containers.run(
+                    request.imageName,
+                    name=request.containerName,
+                    environment=request.environmentVars,
+                    ports={'8000/tcp': host_port},
+                    detach=True,
+                )
+                return host_port
+
         except docker.errors.ImageNotFound:
             print(f'Image {request.imageName} not found', file=sys.stderr)
             return None
@@ -40,7 +73,7 @@ class DockerManager:
             print('Error starting container: {e}', file=sys.stderr)
             return None
 
-    def stop_container(self, request: StartMiningRequest):
+    def stop_container(self, request: StartContainerRequest):
         try:
             container = self.client.containers.get(request.containerName)
             container.stop()
@@ -56,7 +89,9 @@ class DockerManager:
         try:
             container = self.client.containers.get(container_name)
             container.remove()
-            self.existing_containers.remove(container_name)
+            if self.monitored_containers.__contains__(container_name):
+                self.monitored_containers.remove(container_name)
+            print(f"Removed container {container_name}")
             return True
         except docker.errors.NotFound:
             print(f'Container {container_name} not found', file=sys.stderr)
@@ -69,22 +104,20 @@ class DockerManager:
         try:
             container = self.client.containers.get(container_name)
             if container.status == 'running':
-                return ContainerStatus.RUNNING
+                return ContainerStatusEnum.RUNNING
             elif container.status == 'exited':
-                if self.existing_containers.__contains__(container_name):
-                    self.existing_containers.remove(container_name)
                 exit_code = container.attrs['State']['ExitCode']
                 if exit_code == 0:
-                    return ContainerStatus.FINISHED
+                    return ContainerStatusEnum.FINISHED
                 else:
-                    return ContainerStatus.CRASHED
+                    return ContainerStatusEnum.CRASHED
             else:
-                return ContainerStatus.ERROR
+                return ContainerStatusEnum.ERROR
         except docker.errors.NotFound:
-            return ContainerStatus.NOT_FOUND
+            return ContainerStatusEnum.NOT_FOUND
         except docker.errors.APIError as e:
             print(f'Error getting container status: {e}', file=sys.stderr)
-            return ContainerStatus.ERROR
+            return ContainerStatusEnum.ERROR
 
     def exists(self, container_name: str):
         try:
@@ -94,3 +127,6 @@ class DockerManager:
             return False
         except docker.errors.APIError:
             return False
+
+
+docker_manager = DockerManager()

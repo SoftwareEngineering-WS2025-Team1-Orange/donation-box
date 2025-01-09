@@ -1,5 +1,6 @@
 from bright_ws.config.config import BrightConfig
 from bright_ws.core.bright_ws import BrightWs
+from donationbox.routes.config_route import config_router
 from utils.settings import settings
 
 from lifecycle.lifecycle import lifecycle
@@ -15,7 +16,8 @@ bright_ws = BrightWs(config=BrightConfig(
     lifecycle=[lifecycle],
     routes=[auth_router,
             status_router,
-            deploy_router
+            deploy_router,
+            config_router,
             ],
 ))
 

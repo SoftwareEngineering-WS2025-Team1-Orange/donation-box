@@ -1,4 +1,7 @@
 import json
+import threading
+import time
+
 
 from websocket import WebSocketApp
 
@@ -26,3 +29,15 @@ def on_open(ws: WebSocketApp):
             "token": settings.jwt}
     }
     ws.send(json.dumps(dict))
+
+    def print_message():
+        while True:
+            time.sleep(10)
+
+    thread = threading.Thread(target=print_message)
+
+    thread.daemon = True
+
+    thread.start()
+
+
