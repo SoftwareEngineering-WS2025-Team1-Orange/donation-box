@@ -37,7 +37,7 @@ class DockerManager:
                 return 0
 
             if not isPluginContainer:
-                container = self.client.containers.run(
+                self.client.containers.run(
                     request.imageName,
                     name=request.containerName,
                     environment=request.environmentVars,
@@ -48,7 +48,7 @@ class DockerManager:
 
             else:
                 host_port = self.find_free_port()
-                container = self.client.containers.run(
+                self.client.containers.run(
                     request.imageName,
                     name=request.containerName,
                     environment=request.environmentVars,
