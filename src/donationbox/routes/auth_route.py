@@ -1,5 +1,6 @@
 import sys
 from bright_ws import Router
+from websocket import WebSocketApp
 from dclasses import AuthResponse, ContainerStatusEnum
 from utils import docker_manager
 
@@ -7,7 +8,7 @@ auth_router = Router()
 
 
 @auth_router.route(event="authResponse")
-def authenticate_response(message: AuthResponse):
+def authenticate_response(message: AuthResponse, ws: WebSocketApp):
     if not message.success:
         print("Error: Could not authenticate to mainframe", file=sys.stderr)
         exit(1)

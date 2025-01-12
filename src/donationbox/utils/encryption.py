@@ -5,7 +5,7 @@ from cryptography.hazmat.backends import default_backend
 import base64
 import secrets
 from typing import Any, Dict
-from settings import settings
+from .settings import settings
 
 
 def generate_key(key_length: int = 32) -> bytes:
@@ -53,7 +53,7 @@ def store_json_encrypted(data: Dict[str, Any], filename: str) -> None:
         f.write(encrypted_data)
 
 
-def read_json_encrypted(filename: str) -> Dict[str, Any]:
+def load_json_encrypted(filename: str) -> Dict[str, Any]:
     with open(filename, 'rb') as f:
         encrypted_data = f.read()
     decrypted_data = decrypt(encrypted_data)

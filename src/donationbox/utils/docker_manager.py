@@ -1,10 +1,24 @@
-import socket
 import sys
+from enum import Enum
+from typing import Optional, Dict
+
 import docker
 from dclasses import StartContainerRequest, ContainerStatusEnum
 
 
 class DockerManager:
+    class StartContainerResult(Enum):
+        SUCCESS = 0
+        RESTARTED = 1
+        ALREADY_RUNNING = 2
+        IMAGE_NOT_FOUND = 3
+        ERROR = 4
+
+    class StopRemoveContainerResult(Enum):
+        SUCCESS = 0
+        CONTAINER_NOT_FOUND = 1
+        ERROR = 2
+
     monitored_containers = []
 
     def __init__(self):
@@ -12,21 +26,12 @@ class DockerManager:
 
     def get_monitored_containers(self):
         return self.monitored_containers
-    def find_free_port(self, start_port=50000):
-        for port in range(start_port, 65535):
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                try:
-                    s.bind(("0.0.0.0", port))
-                    return port
-                except OSError:
-                    continue
-        raise RuntimeError("Could not find a free port")
 
-    def get_container_port(self, container_name):
+    def get_container_port(self, container_name, port_int='8000/tcp'):
         try:
-            return self.client.containers.get(container_name).ports['8000/tcp'][0]['HostPort']
+            return self.client.containers.get(container_name).ports[port_int][0]['HostPort']
         except docker.errors.NotFound:
-            print(f'Container {container_name} not found', file=sys.stderr)
+            print(f'get_container_port: Container {container_name} not found', file=sys.stderr)
             return None
         except KeyError:
             print(f'Port mapping for container {container_name} not found', file=sys.stderr)
@@ -34,89 +39,94 @@ class DockerManager:
         except Exception as e:
             print(f'An unexpected error occurred: {e}', file=sys.stderr)
             return None
+
     def add_monitored_container(self, container_name: str):
         self.monitored_containers.append(container_name)
 
-    def start_container(self, request: StartContainerRequest, isPluginContainer=False):
+    def start_container(self, request: StartContainerRequest,
+                        port: Optional[Dict[str, str]] = None) -> StartContainerResult:
         try:
             if self.exists(request.containerName):
-                if request.containerName == "pluginContainer":
-                    return self.client.containers.get(request.containerName).ports['8000/tcp'][0]['HostPort']
+                if not self.monitored_containers.__contains__(request.containerName):
+                    self.add_monitored_container(request.containerName)
+
+                if self.get_container_status(request.containerName) == ContainerStatusEnum.RUNNING:
+                    return self.StartContainerResult.ALREADY_RUNNING
+
                 self.client.containers.get(request.containerName).start()
-                return 0
+                return self.StartContainerResult.RESTARTED
 
-            if not isPluginContainer:
+            if port:
+                assert 'int' in port and 'ext' in port, "Port mapping must contain 'int' and 'ext' values"
                 self.client.containers.run(
                     request.imageName,
                     name=request.containerName,
                     environment=request.environmentVars,
-                    detach=True
-                )
-                self.monitored_containers.append(request.containerName)
-                return 0
-
-            else:
-                host_port = self.find_free_port()
-                self.client.containers.run(
-                    request.imageName,
-                    name=request.containerName,
-                    environment=request.environmentVars,
-                    ports={'8000/tcp': host_port},
+                    ports={port['int']: port['ext']},
                     detach=True,
                 )
-                return host_port
+            else:
+                self.client.containers.run(
+                    request.imageName,
+                    name=request.containerName,
+                    environment=request.environmentVars,
+                    detach=True,
+                )
+
+            self.add_monitored_container(request.containerName)
+            return self.StartContainerResult.SUCCESS
 
         except docker.errors.ImageNotFound:
-            print(f'Image {request.imageName} not found', file=sys.stderr)
-            return None
-        except docker.errors.APIError:
-            print('Error starting container: {e}', file=sys.stderr)
-            return None
-
-    def stop_container(self, request: StartContainerRequest):
-        try:
-            container = self.client.containers.get(request.containerName)
-            container.stop()
-            return True
-        except docker.errors.NotFound:
-            print(f'Container {request.containerName} not found', file=sys.stderr)
-            return False
+            print(f'start_container: Image {request.imageName} not found', file=sys.stderr)
+            return self.StartContainerResult.IMAGE_NOT_FOUND
         except docker.errors.APIError as e:
-            print(f'Error stopping container: {e}', file=sys.stderr)
-            return False
+            print(f'start_container: An error occurred: {e}', file=sys.stderr)
+            return self.StartContainerResult.ERROR
 
-    def remove_container(self, container_name: str):
+    def stop_container(self, container_name: str) -> StopRemoveContainerResult:
         try:
-            container = self.client.containers.get(container_name)
-            container.remove()
+            self.client.containers.get(container_name).stop()
+            return self.StopRemoveContainerResult.SUCCESS
+        except docker.errors.NotFound:
+            print(f'stop_container: Container {container_name} not found', file=sys.stderr)
+            return self.StopRemoveContainerResult.CONTAINER_NOT_FOUND
+        except docker.errors.APIError as e:
+            print(f'stop_container: An error occurred: {e}', file=sys.stderr)
+            return self.StopRemoveContainerResult.ERROR
+
+    def remove_container(self, container_name: str) -> StopRemoveContainerResult:
+        try:
+            self.client.containers.get(container_name).remove()
             if self.monitored_containers.__contains__(container_name):
                 self.monitored_containers.remove(container_name)
-            print(f"Removed container {container_name}")
-            return True
+            return self.StopRemoveContainerResult.SUCCESS
         except docker.errors.NotFound:
-            print(f'Container {container_name} not found', file=sys.stderr)
-            return False
+            print(f'remove_container: Container {container_name} not found', file=sys.stderr)
+            return self.StopRemoveContainerResult.CONTAINER_NOT_FOUND
         except docker.errors.APIError as e:
-            print(f'Error removing container: {e}', file=sys.stderr)
-            return False
+            print(f'stop_container: An error occurred: {e}', file=sys.stderr)
+            return self.StopRemoveContainerResult.ERROR
 
-    def get_container_status(self, container_name: str):
+    def get_container_status(self, container_name: str) -> ContainerStatusEnum:
         try:
             container = self.client.containers.get(container_name)
-            if container.status == 'running':
-                return ContainerStatusEnum.RUNNING
-            elif container.status == 'exited':
-                exit_code = container.attrs['State']['ExitCode']
-                if exit_code == 0:
-                    return ContainerStatusEnum.FINISHED
-                else:
-                    return ContainerStatusEnum.CRASHED
-            else:
-                return ContainerStatusEnum.ERROR
+            match container.status:
+                case 'running':
+                    return ContainerStatusEnum.RUNNING
+                case 'exited':
+                    exit_code = container.attrs['State']['ExitCode']
+                    match exit_code:
+                        case 0:
+                            return ContainerStatusEnum.FINISHED
+                        case _:
+                            return ContainerStatusEnum.CRASHED
+                case _:
+                    return ContainerStatusEnum.ERROR
         except docker.errors.NotFound:
+            print(f'get_container_status: Container {container_name} not found', file=sys.stderr)
             return ContainerStatusEnum.NOT_FOUND
         except docker.errors.APIError as e:
-            print(f'Error getting container status: {e}', file=sys.stderr)
+            print(f'get_container_status: An error occurred: {e}', file=sys.stderr)
             return ContainerStatusEnum.ERROR
 
     def exists(self, container_name: str):

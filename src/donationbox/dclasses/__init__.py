@@ -4,7 +4,7 @@ from typing import Optional, Dict, List
 
 
 class StartContainerResponseEnum(str, Enum):
-    STARTED_MINING = 'started_container'
+    STARTED_CONTAINER = 'started_container'
     ERR_CONTAINER_ALREADY_RUNNING = 'ERR_container_already_running'
     ERR_IMAGE_NOT_FOUND = 'ERR_image_not_found'
     ERR_COULD_NOT_START_CONTAINER = 'ERR_could_not_start_container'
@@ -14,7 +14,7 @@ class StartContainerResponseEnum(str, Enum):
 
 
 class StopContainerResponseEnum(str, Enum):
-    STOPPED_MINING = 'stopped_container'
+    STOPPED_CONTAINER = 'stopped_container'
     ERR_CONTAINER_NOT_RUNNING = 'ERR_container_not_running'
     ERR_OTHER = 'ERR_other'
 
@@ -99,3 +99,9 @@ class AddConfigurationRequest:
 @dataclass
 class AddConfigurationResponse:
     success: bool
+
+@dataclass
+class StoredConfiguration:
+    image_name: str
+    port: Dict[str, str]
+    plugin_configuration: Dict[str, str]
