@@ -93,7 +93,7 @@ class StopContainerResponse:
 
 @dataclass
 class AddConfigurationRequest:
-    image_name: str
+    plugin_image_name: str
     plugin_configuration: Optional[Dict[str, str]]
 
 @dataclass

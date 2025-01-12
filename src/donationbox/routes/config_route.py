@@ -69,7 +69,7 @@ def add_configuration_request(message: AddConfigurationRequest, ws: WebSocketApp
             raise RuntimeError("Could not find a free port")
 
         port = find_free_port()
-        match docker_manager.start_container(StartContainerRequest(imageName=message.image_name,
+        match docker_manager.start_container(StartContainerRequest(imageName=message.plugin_image_name,
                                                                    containerName="pluginContainer",
                                                                    environmentVars={"api_passkey": settings.passkey}),
                                              port={'int': '8000/tcp', 'ext': port}):
@@ -103,7 +103,7 @@ def add_configuration_request(message: AddConfigurationRequest, ws: WebSocketApp
             if response.status_code == 201:
                 print("Load config: Success")
                 store_json_encrypted(asdict(
-                    StoredConfiguration(image_name=message.image_name,
+                    StoredConfiguration(image_name=message.plugin_image_name,
                                         port={'int': '8000/tcp', 'ext': port},
                                         plugin_configuration=message.plugin_configuration)), 'config.json')
             else:

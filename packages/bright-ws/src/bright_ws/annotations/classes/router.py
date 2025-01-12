@@ -31,6 +31,7 @@ class Router:
                 return_value = func(casted_arg, *ws, **kwargs)
                 if return_value:
                     return_class = return_value.__class__.__name__
+                    return_class = return_class[0].lower() + return_class[1:]
                     ws[0].send(json.dumps({'event': return_class, 'data': asdict(return_value)}))
 
             self._store[event] = wrapper
