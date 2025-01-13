@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Optional, Dict
 
 import docker
-from dclasses import StartContainerRequest, ContainerStatusEnum, ContainerStatus
+from donationbox.dclasses import StartContainerRequest, ContainerStatusEnum, ContainerStatus
 
 
 class DockerManager:
