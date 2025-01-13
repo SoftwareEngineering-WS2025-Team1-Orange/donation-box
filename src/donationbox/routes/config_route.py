@@ -1,4 +1,5 @@
 import json
+import os
 import time
 import socket
 from dataclasses import asdict
@@ -56,7 +57,6 @@ def add_configuration_request(message: AddConfigurationRequest, ws: WebSocketApp
     :param message: AddConfigurationRequest message containing details for setup.
     :param ws: WebSocketApp instance.
     """
-
     def thread_logic(ws: WebSocketApp):
         def find_free_port(start_port=50000):
             for port in range(start_port, 65535):
@@ -115,4 +115,9 @@ def add_configuration_request(message: AddConfigurationRequest, ws: WebSocketApp
         except requests.exceptions.RequestException as e:
             print("An error occurred loading config data:", e)
 
+    docker_manager.remove_container("pluginContainer")
+    try:
+        os.remove("config.json")
+    except FileNotFoundError:
+        pass
     threading.Thread(target=thread_logic(ws=ws)).start()

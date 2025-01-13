@@ -95,6 +95,7 @@ class DockerManager:
             return self.StopRemoveContainerResult.ERROR
 
     def remove_container(self, container_name: str) -> StopRemoveContainerResult:
+        self.stop_container(container_name)
         try:
             self.client.containers.get(container_name).remove()
             if self.monitored_containers.__contains__(container_name):
