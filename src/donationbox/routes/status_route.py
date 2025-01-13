@@ -36,11 +36,13 @@ def parse_solar_status_update_response(data: str) -> SolarStatusUpdateResponse:
 @status_router.route(event="statusRequest")
 def status_update(message: dict, ws: WebSocketApp) -> StatusUpdateResponse:
     status_update_response = StatusUpdateResponse(time=datetime.now().isoformat(),
-                                                  solar=SolarStatusUpdateResponse(),
-                                                  container={})
+                                                  power_supply=SolarStatusUpdateResponse(),
+                                                  container=[])
 
     for container_name in docker_manager.get_monitored_containers():
-        status_update_response.container[container_name] = docker_manager.get_container_status(container_name)
+        status_update_response.container.append(
+            docker_manager.get_container_status(container_name)
+        )
 
     container_port = docker_manager.get_container_port('pluginContainer')
     if container_port is None:

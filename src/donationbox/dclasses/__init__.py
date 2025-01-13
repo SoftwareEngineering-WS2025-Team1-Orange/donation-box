@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional, Dict, List
@@ -25,6 +27,13 @@ class ContainerStatusEnum(str, Enum):
     CRASHED = 'CRASHED'
     NOT_FOUND = 'NOT_FOUND'
     ERROR = 'ERROR'
+
+
+@dataclass
+class ContainerStatus:
+    container_name: str
+    status_number: int
+    status_message: ContainerStatusEnum
 
 
 @dataclass
@@ -64,9 +73,14 @@ class SolarStatusUpdateResponse:
 @dataclass
 class StatusUpdateResponse:
     time: str
-    solar: SolarStatusUpdateResponse
-    container: Dict[str, ContainerStatusEnum]
+    power_supply: SolarStatusUpdateResponse
+    container: List[ContainerStatusMessage]
 
+@dataclass
+class ContainerStatusMessage:
+    containerName: str
+    statusCode: int
+    statusMsg: str
 
 @dataclass
 class StartContainerRequest:

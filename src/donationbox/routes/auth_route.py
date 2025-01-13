@@ -14,7 +14,7 @@ def authenticate_response(message: AuthResponse, ws: WebSocketApp):
         exit(1)
     for container_name in message.monitored_containers:
         if docker_manager.exists(container_name):
-            status = docker_manager.get_container_status(container_name)
+            status = docker_manager.get_container_status(container_name).status_message
             if status == ContainerStatusEnum.CRASHED or status == ContainerStatusEnum.FINISHED:
                 docker_manager.remove_container(container_name)
             else:
