@@ -30,6 +30,13 @@ class ContainerStatusEnum(str, Enum):
 
 
 @dataclass
+class ContainerStatus:
+    container_name: str
+    status_number: int
+    status_message: ContainerStatusEnum
+
+
+@dataclass
 class AuthRequest:
     username: str
     password: str
@@ -67,7 +74,7 @@ class SolarStatusUpdateResponse:
 class StatusUpdateResponse:
     time: str
     power_supply: SolarStatusUpdateResponse
-    container: list[ContainerStatusMessage]
+    container: List[ContainerStatusMessage]
 
 @dataclass
 class ContainerStatusMessage:

@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from bright_ws import Router
 import requests
-from dclasses import StatusUpdateResponse, SolarStatusUpdateResponse, Production, Consumption, ContainerStatusMessage
+from dclasses import StatusUpdateResponse, SolarStatusUpdateResponse, Production, Consumption
 from utils import docker_manager
 from utils import settings
 from websocket import WebSocketApp
@@ -41,11 +41,7 @@ def status_update(message: dict, ws: WebSocketApp) -> StatusUpdateResponse:
 
     for container_name in docker_manager.get_monitored_containers():
         status_update_response.container.append(
-            ContainerStatusMessage(
-                containerName=container_name,
-                statusCode=200,
-                statusMsg=docker_manager.get_container_status(container_name),
-            )
+            docker_manager.get_container_status(container_name)
         )
 
     container_port = docker_manager.get_container_port('pluginContainer')
