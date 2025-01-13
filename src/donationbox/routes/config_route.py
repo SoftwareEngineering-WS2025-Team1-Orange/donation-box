@@ -57,7 +57,7 @@ def add_configuration_request(message: AddConfigurationRequest, ws: WebSocketApp
     :param ws: WebSocketApp instance.
     """
 
-    def thread_logic():
+    def thread_logic(ws: WebSocketApp):
         def find_free_port(start_port=50000):
             for port in range(start_port, 65535):
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -108,7 +108,11 @@ def add_configuration_request(message: AddConfigurationRequest, ws: WebSocketApp
                                         plugin_configuration=message.plugin_configuration)), 'config.json')
             else:
                 print("Failed with status code:", response.status_code)
+                ws.send(json.dumps({"event": "addErrorResponse",
+                                    "data": {"containerName": "pluginContainer",
+                                             "statusCode": response.status_code,
+                                             "statusMessage": "Error: Load config"}}))
         except requests.exceptions.RequestException as e:
             print("An error occurred loading config data:", e)
 
-    threading.Thread(target=thread_logic).start()
+    threading.Thread(target=thread_logic(ws=ws)).start()
