@@ -61,7 +61,7 @@ def status_update(message: dict, ws: WebSocketApp) -> StatusUpdateResponse:
 
         if poll_response.status_code == 200:
             print("Success:", poll_response.status_code)
-            status_update_response.solar = parse_solar_status_update_response(poll_response.text)
+            status_update_response.power_supply = parse_solar_status_update_response(poll_response.text)
             return status_update_response
         else:
             ws.send(json.dumps({"event": "addErrorResponse",
