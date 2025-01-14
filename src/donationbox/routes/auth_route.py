@@ -29,5 +29,5 @@ def authenticate_response(message: AuthResponse, ws: WebSocketApp):
         if container.containerName == 'pluginContainer':
             container.statusCode = 1 if status.power_supply is None else 0
             container.statusMsg = "Error" if status.power_supply is None else "Ok"
-    ws.send(json.dumps(asdict(status)))
+    ws.send(json.dumps({'event': 'statusUpdateResponse', 'data': asdict(status)}))
     return None
