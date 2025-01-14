@@ -1,8 +1,12 @@
+import json
 import sys
+from dataclasses import asdict
+
 from bright_ws import Router
 from websocket import WebSocketApp
 from dclasses import AuthResponse, ContainerStatusEnum
 from utils import docker_manager
+from routes.status_route import get_status
 
 auth_router = Router()
 
@@ -19,4 +23,11 @@ def authenticate_response(message: AuthResponse, ws: WebSocketApp):
                 docker_manager.remove_container(container_name)
             else:
                 docker_manager.add_monitored_container(container_name)
+
+    status = get_status()
+    for container in status.container:
+        if container.containerName == 'pluginContainer':
+            container.statusCode = 1 if status.power_supply is None else 0
+            container.statusMsg = "Error" if status.power_supply is None else "Ok"
+    ws.send(json.dumps(asdict(status)))
     return None
