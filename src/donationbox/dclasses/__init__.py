@@ -27,6 +27,8 @@ class ContainerStatusEnum(str, Enum):
     CRASHED = 'CRASHED'
     NOT_FOUND = 'NOT_FOUND'
     ERROR = 'ERROR'
+    OK = 'OK'
+    PENDING = 'PENDING'
 
 
 @dataclass

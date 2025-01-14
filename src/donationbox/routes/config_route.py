@@ -129,7 +129,7 @@ def add_configuration_request(message: AddConfigurationRequest, ws: WebSocketApp
     status.container.append(
         ContainerStatus(
             containerName='pluginContainer',
-            statusCode='100',
+            statusCode=100,
             statusMsg='Pending'
         )
     )
