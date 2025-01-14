@@ -74,13 +74,7 @@ class SolarStatusUpdateResponse:
 class StatusUpdateResponse:
     time: str
     power_supply: SolarStatusUpdateResponse
-    container: List[ContainerStatusMessage]
-
-@dataclass
-class ContainerStatusMessage:
-    containerName: str
-    statusCode: int
-    statusMsg: str
+    container: List[ContainerStatus]
 
 @dataclass
 class StartContainerRequest:

@@ -50,7 +50,7 @@ class DockerManager:
                 if not self.monitored_containers.__contains__(request.containerName):
                     self.add_monitored_container(request.containerName)
 
-                if self.get_container_status(request.containerName).status_message == ContainerStatusEnum.RUNNING:
+                if self.get_container_status(request.containerName).statusMsg == ContainerStatusEnum.RUNNING:
                     return self.StartContainerResult.ALREADY_RUNNING
 
                 self.client.containers.get(request.containerName).start()

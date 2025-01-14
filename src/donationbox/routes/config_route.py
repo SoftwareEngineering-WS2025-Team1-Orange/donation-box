@@ -9,12 +9,13 @@ import threading
 
 from websocket import WebSocketApp
 from bright_ws import Router
-from dclasses import AddConfigurationRequest, AddConfigurationResponse, StoredConfiguration
+from dclasses import AddConfigurationRequest, AddConfigurationResponse, StoredConfiguration, ContainerStatus
 
 from utils import docker_manager
 from utils import settings
 from utils.encryption import store_json_encrypted
 
+from routes.status_route import get_status
 from donationbox.dclasses import StartContainerRequest
 
 config_router = Router()
@@ -49,6 +50,17 @@ def wait_for_ok(endpoint: str, timeout: int = 60, interval: int = 5):
         time.sleep(interval)
 
 
+def find_free_port(start_port=50000):
+    for port in range(start_port, 65535):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind(("0.0.0.0", port))
+                return port
+            except OSError:
+                continue
+    raise RuntimeError("Could not find a free port")
+
+
 @config_router.route(event="addConfigurationRequest")
 def add_configuration_request(message: AddConfigurationRequest, ws: WebSocketApp) -> AddConfigurationResponse:
     """
@@ -57,17 +69,8 @@ def add_configuration_request(message: AddConfigurationRequest, ws: WebSocketApp
     :param message: AddConfigurationRequest message containing details for setup.
     :param ws: WebSocketApp instance.
     """
-    def thread_logic(ws: WebSocketApp):
-        def find_free_port(start_port=50000):
-            for port in range(start_port, 65535):
-                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                    try:
-                        s.bind(("0.0.0.0", port))
-                        return port
-                    except OSError:
-                        continue
-            raise RuntimeError("Could not find a free port")
 
+    def thread_logic(ws: WebSocketApp):
         port = find_free_port()
         match docker_manager.start_container(StartContainerRequest(imageName=message.plugin_image_name,
                                                                    containerName="pluginContainer",
@@ -98,24 +101,37 @@ def add_configuration_request(message: AddConfigurationRequest, ws: WebSocketApp
                 "Content-Type": "application/json"
             }
 
-            response = requests.post(load_config_url, data=json.dumps(payload), headers=headers, )
+            requests.post(load_config_url, data=json.dumps(payload), headers=headers)
 
-            if response.status_code == 201:
+            status = get_status()
+
+            for container in status.container:
+                if container.containerName == 'pluginContainer':
+                    container.statusCode = 1 if status.power_supply is None else 0
+                    container.statusMsg = "Error" if status.power_supply is None else "Ok"
+
+            if status.power_supply is not None:
                 print("Load config: Success")
                 store_json_encrypted(asdict(
                     StoredConfiguration(image_name=message.plugin_image_name,
                                         port={'int': '8000/tcp', 'ext': port},
                                         plugin_configuration=message.plugin_configuration)), 'config.json')
-            else:
-                print("Failed with status code:", response.status_code)
-                ws.send(json.dumps({"event": "addErrorResponse",
-                                    "data": {"containerName": "pluginContainer",
-                                             "statusCode": response.status_code,
-                                             "statusMsg": "Error: Load config"}}))
+
         except requests.exceptions.RequestException as e:
             print("An error occurred loading config data:", e)
 
-    docker_manager.remove_container("pluginContainer")
+    status = get_status()
+    for container in status.container:
+        if container.containerName == 'pluginContainer':
+            status.container.remove(container)
+    status.container.append(
+        ContainerStatus(
+            containerName='pluginContainer',
+            statusCode='100',
+            statusMsg='Pending'
+        )
+    )
+    ws.send(json.dumps(asdict(status)))
     try:
         os.remove("config.json")
     except FileNotFoundError:

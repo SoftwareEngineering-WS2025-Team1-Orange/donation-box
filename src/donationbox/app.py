@@ -32,7 +32,7 @@ def main():
     # Load configuration
     try:
         config = StoredConfiguration(**load_json_encrypted('config.json'))
-        print("Loaded configuration", config)
+        print("Loaded configuration")
         match docker_manager.start_container(StartContainerRequest(imageName=config.image_name,
                                                                    containerName="pluginContainer",
                                                                    environmentVars={"api_passkey": settings.passkey}),
@@ -58,12 +58,7 @@ def main():
             "Content-Type": "application/json"
         }
 
-        response = requests.post(url=f"{plugin_url}/load_config", data=json.dumps(payload), headers=headers)
-        match response.status_code:
-            case 201:
-                print("Load config: Success")
-            case _:
-                print("Failed with status code:", response.status_code)
+        requests.post(url=f"{plugin_url}/load_config", data=json.dumps(payload), headers=headers)
 
     except requests.exceptions.RequestException as e:
         print("An error occurred loading config data:", e)
