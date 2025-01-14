@@ -114,40 +114,40 @@ class DockerManager:
             match container.status:
                 case 'running':
                     return ContainerStatus(
-                        container_name=container_name,
-                        status_number=0,
-                        status_message=ContainerStatusEnum.RUNNING
+                        containerName=container_name,
+                        statusNumber=0,
+                        statusMessage=ContainerStatusEnum.RUNNING
                     )
                 case 'exited':
                     exit_code = container.attrs['State']['ExitCode']
                     match exit_code:
                         case 0:
                             return ContainerStatus(
-                                container_name=container_name,
-                                status_number=200,
-                                status_message=ContainerStatusEnum.FINISHED
+                                containerName=container_name,
+                                statusNumber=200,
+                                statusMessage=ContainerStatusEnum.FINISHED
                             )
                         case ec:
                             return ContainerStatus(
-                                container_name=container_name,
-                                status_number=ec,
-                                status_message=ContainerStatusEnum.CRASHED
+                                containerName=container_name,
+                                statusNumber=ec,
+                                statusMessage=ContainerStatusEnum.CRASHED
                             )
                 case _:
                     raise docker.errors.APIError("Unknown container status")
         except docker.errors.NotFound:
             print(f'get_container_status: Container {container_name} not found', file=sys.stderr)
             return ContainerStatus(
-                container_name=container_name,
-                status_number=404,
-                status_message=ContainerStatusEnum.NOT_FOUND
+                containerName=container_name,
+                statusNumber=404,
+                statusMessage=ContainerStatusEnum.NOT_FOUND
             )
         except docker.errors.APIError as e:
             print(f'get_container_status: An error occurred: {e}', file=sys.stderr)
             return ContainerStatus(
-                container_name=container_name,
-                status_number=500,
-                status_message=ContainerStatusEnum.ERROR
+                containerName=container_name,
+                statusNumber=500,
+                statusMessage=ContainerStatusEnum.ERROR
             )
 
     def exists(self, container_name: str):

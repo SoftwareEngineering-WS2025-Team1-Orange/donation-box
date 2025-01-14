@@ -31,9 +31,9 @@ class ContainerStatusEnum(str, Enum):
 
 @dataclass
 class ContainerStatus:
-    container_name: str
-    status_number: int
-    status_message: ContainerStatusEnum
+    containerName: str
+    statusNumber: int
+    statusMessage: ContainerStatusEnum
 
 
 @dataclass
