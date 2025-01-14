@@ -114,10 +114,10 @@ def add_configuration_request(message: AddConfigurationRequest, ws: WebSocketApp
 
             if status.power_supply is not None:
                 print("Load config: Success")
-                store_json_encrypted(asdict(
-                    StoredConfiguration(image_name=message.plugin_image_name,
-                                        port={'int': '8000/tcp', 'ext': port},
-                                        plugin_configuration=message.plugin_configuration)), 'config.json')
+            store_json_encrypted(asdict(
+                StoredConfiguration(image_name=message.plugin_image_name,
+                                    port={'int': '8000/tcp', 'ext': port},
+                                    plugin_configuration=message.plugin_configuration)), 'config.json')
 
         except requests.exceptions.RequestException as e:
             print("An error occurred loading config data:", e)
