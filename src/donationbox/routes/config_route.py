@@ -111,7 +111,7 @@ def add_configuration_request(message: AddConfigurationRequest, ws: WebSocketApp
                 ws.send(json.dumps({"event": "addErrorResponse",
                                     "data": {"containerName": "pluginContainer",
                                              "statusCode": response.status_code,
-                                             "statusMessage": "Error: Load config"}}))
+                                             "statusMsg": "Error: Load config"}}))
         except requests.exceptions.RequestException as e:
             print("An error occurred loading config data:", e)
 

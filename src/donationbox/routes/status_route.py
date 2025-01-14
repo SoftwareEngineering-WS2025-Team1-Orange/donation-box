@@ -67,7 +67,7 @@ def status_update(message: dict, ws: WebSocketApp) -> StatusUpdateResponse:
             ws.send(json.dumps({"event": "addErrorResponse",
                                 "data": {"containerName": "pluginContainer",
                                          "statusCode": poll_response.status_code,
-                                         "statusMessage": "Error: Cannot poll"}}))
+                                         "statusMsg": "Error: Cannot poll"}}))
     except requests.exceptions.RequestException as e:
         print("An error occurred:", e)
     return status_update_response

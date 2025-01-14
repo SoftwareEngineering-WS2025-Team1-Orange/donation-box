@@ -115,8 +115,8 @@ class DockerManager:
                 case 'running':
                     return ContainerStatus(
                         containerName=container_name,
-                        statusNumber=0,
-                        statusMessage=ContainerStatusEnum.RUNNING
+                        statusCode=0,
+                        statusMsg=ContainerStatusEnum.RUNNING
                     )
                 case 'exited':
                     exit_code = container.attrs['State']['ExitCode']
@@ -124,14 +124,14 @@ class DockerManager:
                         case 0:
                             return ContainerStatus(
                                 containerName=container_name,
-                                statusNumber=200,
-                                statusMessage=ContainerStatusEnum.FINISHED
+                                statusCode=200,
+                                statusMsg=ContainerStatusEnum.FINISHED
                             )
                         case ec:
                             return ContainerStatus(
                                 containerName=container_name,
-                                statusNumber=ec,
-                                statusMessage=ContainerStatusEnum.CRASHED
+                                statusCode=ec,
+                                statusMsg=ContainerStatusEnum.CRASHED
                             )
                 case _:
                     raise docker.errors.APIError("Unknown container status")
@@ -139,15 +139,15 @@ class DockerManager:
             print(f'get_container_status: Container {container_name} not found', file=sys.stderr)
             return ContainerStatus(
                 containerName=container_name,
-                statusNumber=404,
-                statusMessage=ContainerStatusEnum.NOT_FOUND
+                statusCode=404,
+                statusMsg=ContainerStatusEnum.NOT_FOUND
             )
         except docker.errors.APIError as e:
             print(f'get_container_status: An error occurred: {e}', file=sys.stderr)
             return ContainerStatus(
                 containerName=container_name,
-                statusNumber=500,
-                statusMessage=ContainerStatusEnum.ERROR
+                statusCode=500,
+                statusMsg=ContainerStatusEnum.ERROR
             )
 
     def exists(self, container_name: str):
