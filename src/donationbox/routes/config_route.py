@@ -110,6 +110,8 @@ def add_configuration_request(message: AddConfigurationRequest, ws: WebSocketApp
                     container.statusCode = 1 if status.power_supply is None else 0
                     container.statusMsg = "Error" if status.power_supply is None else "Ok"
 
+            ws.send(json.dumps(asdict(status)))
+
             if status.power_supply is not None:
                 print("Load config: Success")
                 store_json_encrypted(asdict(
