@@ -33,10 +33,20 @@ def parse_solar_status_update_response(data: str) -> SolarStatusUpdateResponse:
     )
 
 
-@status_router.route(event="statusRequest")
+@status_router.route(event="statusUpdateRequest")
 def status_update(message: dict, ws: WebSocketApp) -> StatusUpdateResponse:
+    status = get_status()
+    if status.power_supply is None:
+        ws.send(json.dumps({"event": "addErrorResponse",
+                            "data": {"containerName": "pluginContainer",
+                                     "statusCode": 400,
+                                     "statusMsg": "Error: Cannot poll"}}))
+    return status
+
+
+def get_status() -> SolarStatusUpdateResponse:
     status_update_response = StatusUpdateResponse(time=datetime.now().isoformat(),
-                                                  power_supply=SolarStatusUpdateResponse(),
+                                                  power_supply=None,
                                                   container=[])
 
     for container_name in docker_manager.get_monitored_containers():
@@ -45,8 +55,10 @@ def status_update(message: dict, ws: WebSocketApp) -> StatusUpdateResponse:
         )
 
     container_port = docker_manager.get_container_port('pluginContainer')
+
     if container_port is None:
         return status_update_response
+
     poll_url = f"http://localhost:{container_port}/poll"
 
     try:
@@ -61,9 +73,8 @@ def status_update(message: dict, ws: WebSocketApp) -> StatusUpdateResponse:
 
         if poll_response.status_code == 200:
             print("Success:", poll_response.status_code)
-            status_update_response.solar = parse_solar_status_update_response(poll_response.text)
-        else:
-            print("Failed with status code:", poll_response.status_code)
+            status_update_response.power_supply = parse_solar_status_update_response(poll_response.text)
+
     except requests.exceptions.RequestException as e:
         print("An error occurred:", e)
     return status_update_response
