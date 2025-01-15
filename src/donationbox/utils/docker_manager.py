@@ -88,7 +88,6 @@ class DockerManager:
             print(f'stop_container: An unexpected error occurred: {e}', file=sys.stderr)
             return self.StartContainerResult.ERROR
 
-
     def stop_container(self, container_name: str) -> StopRemoveContainerResult:
         try:
             self.client.containers.get(container_name).stop()

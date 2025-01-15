@@ -10,9 +10,6 @@ class StartContainerResponseEnum(str, Enum):
     ERR_CONTAINER_ALREADY_RUNNING = 'ERR_container_already_running'
     ERR_IMAGE_NOT_FOUND = 'ERR_image_not_found'
     ERR_COULD_NOT_START_CONTAINER = 'ERR_could_not_start_container'
-    ERR_CONNECTION_TO_MINING_POOL_FAILED = 'ERR_connection_to_mining_pool_failed'
-    ERR_AUTHENTICATION_ON_MINING_POOL_FAILED = 'ERR_authentication_on_mining_pool_failed'
-    ERR_OTHER = 'ERR_other'
 
 
 class StopContainerResponseEnum(str, Enum):
