@@ -9,7 +9,8 @@ import threading
 
 from websocket import WebSocketApp
 from bright_ws import Router
-from dclasses import AddConfigurationRequest, AddConfigurationResponse, StoredConfiguration, ContainerStatus
+from dclasses import (AddConfigurationRequest, AddConfigurationResponse, StoredConfiguration, ContainerStatus,
+                      ContainerStatusCodeEnum, ContainerStatusMessageEnum)
 
 from utils import docker_manager
 from utils import settings
@@ -107,8 +108,10 @@ def add_configuration_request(message: AddConfigurationRequest, ws: WebSocketApp
 
             for container in status.container:
                 if container.containerName == 'pluginContainer':
-                    container.statusCode = 101 if status.power_supply is None else 100
-                    container.statusMsg = "Error" if status.power_supply is None else "Ok"
+                    container.statusCode = ContainerStatusCodeEnum.ERROR if status.power_supply is None \
+                        else ContainerStatusCodeEnum.OK
+                    container.statusMsg = ContainerStatusMessageEnum.ERROR if status.power_supply is None \
+                        else ContainerStatusMessageEnum.OK
 
             ws.send(json.dumps({'event': 'statusUpdateResponse', 'data': asdict(status)}))
 
@@ -129,8 +132,8 @@ def add_configuration_request(message: AddConfigurationRequest, ws: WebSocketApp
     status.container.append(
         ContainerStatus(
             containerName='pluginContainer',
-            statusCode=102,
-            statusMsg='Pending'
+            statusCode=ContainerStatusCodeEnum.PENDING,
+            statusMsg=ContainerStatusMessageEnum.PENDING
         )
     )
     ws.send(json.dumps({'event': 'statusUpdateResponse', 'data': asdict(status)}))

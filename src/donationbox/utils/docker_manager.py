@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Optional, Dict
 
 import docker
-from dclasses import StartContainerRequest, ContainerStatusEnum, ContainerStatus
+from dclasses import StartContainerRequest, ContainerStatusMessageEnum, ContainerStatus
 
 
 class DockerManager:
@@ -50,7 +50,7 @@ class DockerManager:
                 if not self.monitored_containers.__contains__(request.containerName):
                     self.add_monitored_container(request.containerName)
 
-                if self.get_container_status(request.containerName).statusMsg == ContainerStatusEnum.RUNNING:
+                if self.get_container_status(request.containerName).statusMsg == ContainerStatusMessageEnum.RUNNING:
                     return self.StartContainerResult.ALREADY_RUNNING
 
                 self.client.containers.get(request.containerName).start()
@@ -116,7 +116,7 @@ class DockerManager:
                     return ContainerStatus(
                         containerName=container_name,
                         statusCode=0,
-                        statusMsg=ContainerStatusEnum.RUNNING
+                        statusMsg=ContainerStatusMessageEnum.RUNNING
                     )
                 case 'exited':
                     exit_code = container.attrs['State']['ExitCode']
@@ -125,13 +125,13 @@ class DockerManager:
                             return ContainerStatus(
                                 containerName=container_name,
                                 statusCode=200,
-                                statusMsg=ContainerStatusEnum.FINISHED
+                                statusMsg=ContainerStatusMessageEnum.FINISHED
                             )
                         case ec:
                             return ContainerStatus(
                                 containerName=container_name,
                                 statusCode=ec,
-                                statusMsg=ContainerStatusEnum.CRASHED
+                                statusMsg=ContainerStatusMessageEnum.CRASHED
                             )
                 case _:
                     raise docker.errors.APIError("Unknown container status")
@@ -140,14 +140,14 @@ class DockerManager:
             return ContainerStatus(
                 containerName=container_name,
                 statusCode=404,
-                statusMsg=ContainerStatusEnum.NOT_FOUND
+                statusMsg=ContainerStatusMessageEnum.NOT_FOUND
             )
         except docker.errors.APIError as e:
             print(f'get_container_status: An error occurred: {e}', file=sys.stderr)
             return ContainerStatus(
                 containerName=container_name,
                 statusCode=500,
-                statusMsg=ContainerStatusEnum.ERROR
+                statusMsg=ContainerStatusMessageEnum.ERROR
             )
 
     def exists(self, container_name: str):

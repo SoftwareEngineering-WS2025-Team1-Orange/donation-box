@@ -21,21 +21,31 @@ class StopContainerResponseEnum(str, Enum):
     ERR_OTHER = 'ERR_other'
 
 
-class ContainerStatusEnum(str, Enum):
-    RUNNING = 'RUNNING',
-    FINISHED = 'FINISHED',
+class ContainerStatusMessageEnum(str, Enum):
+    RUNNING = 'RUNNING'
     CRASHED = 'CRASHED'
+    FINISHED = 'FINISHED'
     NOT_FOUND = 'NOT_FOUND'
-    ERROR = 'ERROR'
     OK = 'OK'
+    ERROR = 'ERROR'
     PENDING = 'PENDING'
+
+
+class ContainerStatusCodeEnum(int, Enum):
+    RUNNING = 0
+    CRASHED = 1
+    FINISHED = 2
+    NOT_FOUND = 3
+    OK = 100
+    ERROR = 101
+    PENDING = 102
 
 
 @dataclass
 class ContainerStatus:
     containerName: str
     statusCode: int
-    statusMsg: ContainerStatusEnum
+    statusMsg: ContainerStatusMessageEnum
 
 
 @dataclass
@@ -78,6 +88,7 @@ class StatusUpdateResponse:
     power_supply: SolarStatusUpdateResponse
     container: List[ContainerStatus]
 
+
 @dataclass
 class StartContainerRequest:
     imageName: str
@@ -101,14 +112,17 @@ class StopContainerResponse:
     status: bool
     response: StopContainerResponseEnum
 
+
 @dataclass
 class AddConfigurationRequest:
     plugin_image_name: str
     plugin_configuration: Optional[Dict[str, str]]
 
+
 @dataclass
 class AddConfigurationResponse:
     success: bool
+
 
 @dataclass
 class StoredConfiguration:
