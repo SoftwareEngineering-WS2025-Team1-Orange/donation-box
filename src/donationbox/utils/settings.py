@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     jwt: str
     passkey: str
     encryption_key: bytes
+    api_dns: str
 
     model_config = SettingsConfigDict(case_sensitive=False)
 

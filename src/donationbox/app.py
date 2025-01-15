@@ -44,7 +44,7 @@ def main():
             case _:
                 raise Exception("Failed to start plugin container")
 
-        plugin_url = f"http://pluginContainer:{config.port['ext']}"
+        plugin_url = f"http://{settings.api_dns}:{config.port['ext']}"
 
         assert wait_for_ok(f"{plugin_url}/health", timeout=120,
                            interval=5), "Plugin health did not return OK within timeout period"

@@ -89,14 +89,14 @@ def add_configuration_request(message: AddConfigurationRequest, ws: WebSocketApp
                                              'statusMsg': ContainerStatusMessageEnum.ERROR}}))
                 return
 
-        health_url = f"http://pluginContainer:{port}/health"
+        health_url = f"http://{settings.api_dns}:{port}/health"
         timeout = 60
         interval = 5
 
         assert wait_for_ok(health_url, timeout,
                            interval), "Plugin health did not return OK within timeout period"
 
-        load_config_url = f"http://pluginContainer:{port}/load_config"
+        load_config_url = f"http://{settings.api_dns}:{port}/load_config"
 
         try:
             payload = {
