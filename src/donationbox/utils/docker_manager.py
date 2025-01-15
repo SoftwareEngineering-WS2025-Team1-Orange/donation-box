@@ -64,6 +64,7 @@ class DockerManager:
                     environment=request.environmentVars,
                     ports={port['int']: port['ext']},
                     detach=True,
+                    network="proxynet"
                 )
             else:
                 self.client.containers.run(
@@ -71,6 +72,7 @@ class DockerManager:
                     name=request.containerName,
                     environment=request.environmentVars,
                     detach=True,
+                    network="proxynet"
                 )
 
             self.add_monitored_container(request.containerName)

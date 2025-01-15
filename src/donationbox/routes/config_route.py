@@ -83,14 +83,20 @@ def add_configuration_request(message: AddConfigurationRequest, ws: WebSocketApp
                 port = docker_manager.get_container_port("pluginContainer")
             case _:
                 print("Failed to start container")
+                ws.send(json.dumps({'event': 'addErrorResponse',
+                                    'data': {'containerName': 'pluginContainer',
+                                             'statusCode': ContainerStatusCodeEnum.ERROR,
+                                             'statusMsg': ContainerStatusMessageEnum.ERROR}}))
+                return
 
-        health_url = f"http://localhost:{port}/health"
+        health_url = f"http://pluginContainer:{port}/health"
         timeout = 60
         interval = 5
 
-        assert wait_for_ok(health_url, timeout, interval), "Plugin health did not return OK within timeout period"
+        assert wait_for_ok(health_url, timeout,
+                           interval), "Plugin health did not return OK within timeout period"
 
-        load_config_url = f"http://localhost:{port}/load_config"
+        load_config_url = f"http://pluginContainer:{port}/load_config"
 
         try:
             payload = {
