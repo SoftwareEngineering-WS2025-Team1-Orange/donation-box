@@ -48,7 +48,7 @@ class BrightWs:
         routes = collect_routes(self.config)
         lifecycles = collect_lifecycle(self.config)
 
-        websocket.enableTrace(True)
+        websocket.enableTrace(False)
         ws = websocket.WebSocketApp(self.config.host_url,
                                     on_open=lifecycles["on_open"],
                                     on_message=dispatch_event(routes),
