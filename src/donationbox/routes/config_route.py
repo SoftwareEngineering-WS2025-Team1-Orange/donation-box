@@ -15,7 +15,6 @@ from dclasses import (AddConfigurationRequest, AddConfigurationResponse, StoredC
 from utils import docker_manager
 from utils import settings
 from utils.encryption import store_json_encrypted
-
 from routes.status_route import get_status
 from dclasses import StartContainerRequest
 
@@ -23,14 +22,6 @@ config_router = Router()
 
 
 def wait_for_ok(endpoint: str, timeout: int = 60, interval: int = 5):
-    """
-    Synchronously waits for an endpoint to return "OK".
-
-    :param endpoint: The URL of the endpoint to check.
-    :param timeout: Total time to wait before timing out (in seconds).
-    :param interval: Time between checks (in seconds).
-    :return: True if "OK" is returned within the timeout period, otherwise False.
-    """
     start_time = time.time()
     while True:
         try:
@@ -64,13 +55,6 @@ def find_free_port(start_port=50000):
 
 @config_router.route(event="addConfigurationRequest")
 def add_configuration_request(message: AddConfigurationRequest, ws: WebSocketApp) -> AddConfigurationResponse:
-    """
-    Handles configuration loading and status checking in a separate thread.
-
-    :param message: AddConfigurationRequest message containing details for setup.
-    :param ws: WebSocketApp instance.
-    """
-
     def thread_logic(ws: WebSocketApp):
         port = find_free_port()
         match docker_manager.start_container(StartContainerRequest(imageName=message.plugin_image_name,

@@ -31,12 +31,15 @@ def on_open(ws: WebSocketApp):
     }
     ws.send(json.dumps(dict))
 
-    def print_message():
+    def periodic_status_update():
         while True:
-            time.sleep(random.randint(110, 130))
-            status_update({}, ws)
+            try:
+                time.sleep(random.randint(110, 130))
+                status_update({}, ws)
+            except Exception:
+                break
 
-    thread = threading.Thread(target=print_message)
+    thread = threading.Thread(target=periodic_status_update)
     thread.daemon = True
 
     thread.start()
