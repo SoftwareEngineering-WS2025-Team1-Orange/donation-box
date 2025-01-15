@@ -59,7 +59,7 @@ def get_status() -> SolarStatusUpdateResponse:
     if container_port is None:
         return status_update_response
 
-    poll_url = f"http://pluginContainer:{container_port}/poll"
+    poll_url = f"http://{settings.api_dns}:{container_port}/poll"
 
     try:
         payload = {
