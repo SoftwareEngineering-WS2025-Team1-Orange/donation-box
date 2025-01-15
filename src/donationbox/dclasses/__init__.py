@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional, Dict, List
 
 
 class StartContainerResponseEnum(str, Enum):
-    STARTED_MINING = 'started_container'
+    STARTED_CONTAINER = 'started_container'
     ERR_CONTAINER_ALREADY_RUNNING = 'ERR_container_already_running'
     ERR_IMAGE_NOT_FOUND = 'ERR_image_not_found'
     ERR_COULD_NOT_START_CONTAINER = 'ERR_could_not_start_container'
@@ -14,7 +16,7 @@ class StartContainerResponseEnum(str, Enum):
 
 
 class StopContainerResponseEnum(str, Enum):
-    STOPPED_MINING = 'stopped_container'
+    STOPPED_CONTAINER = 'stopped_container'
     ERR_CONTAINER_NOT_RUNNING = 'ERR_container_not_running'
     ERR_OTHER = 'ERR_other'
 
@@ -25,6 +27,13 @@ class ContainerStatusEnum(str, Enum):
     CRASHED = 'CRASHED'
     NOT_FOUND = 'NOT_FOUND'
     ERROR = 'ERROR'
+
+
+@dataclass
+class ContainerStatus:
+    container_name: str
+    status_number: int
+    status_message: ContainerStatusEnum
 
 
 @dataclass
@@ -64,9 +73,14 @@ class SolarStatusUpdateResponse:
 @dataclass
 class StatusUpdateResponse:
     time: str
-    solar: SolarStatusUpdateResponse
-    container: Dict[str, ContainerStatusEnum]
+    power_supply: SolarStatusUpdateResponse
+    container: List[ContainerStatusMessage]
 
+@dataclass
+class ContainerStatusMessage:
+    containerName: str
+    statusCode: int
+    statusMsg: str
 
 @dataclass
 class StartContainerRequest:
@@ -93,9 +107,15 @@ class StopContainerResponse:
 
 @dataclass
 class AddConfigurationRequest:
-    image_name: str
+    plugin_image_name: str
     plugin_configuration: Optional[Dict[str, str]]
 
 @dataclass
 class AddConfigurationResponse:
     success: bool
+
+@dataclass
+class StoredConfiguration:
+    image_name: str
+    port: Dict[str, str]
+    plugin_configuration: Dict[str, str]

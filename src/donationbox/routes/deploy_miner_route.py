@@ -1,7 +1,7 @@
 from bright_ws import Router
 from websocket import WebSocketApp
 from dclasses import StartContainerRequest, StartContainerResponse, StopContainerRequest, StopContainerResponse, \
-    StopContainerResponseEnum, StartContainerResponseEnum, ContainerStatusEnum
+    StopContainerResponseEnum, StartContainerResponseEnum
 
 from utils import docker_manager
 
@@ -9,22 +9,25 @@ deploy_router = Router()
 
 
 @deploy_router.route(event="startContainerRequest")
-def startContainer(message: StartContainerRequest, ws: WebSocketApp):
-    if docker_manager.get_container_status(message.containerName) == ContainerStatusEnum.RUNNING:
-        return StartContainerResponse(success=False, response=StartContainerResponseEnum.ERR_CONTAINER_ALREADY_RUNNING)
-
-    success = docker_manager.start_container(message)
-    if not success:
-        return StartContainerResponse(success=False, response=StartContainerResponseEnum.ERR_COULD_NOT_START_CONTAINER)
-    return StartContainerResponse(success=True, response=StartContainerResponseEnum.STARTED_MINING)
+def start_container(message: StartContainerRequest, ws: WebSocketApp):
+    match docker_manager.start_container(message):
+        case docker_manager.StartContainerResult.ALREADY_RUNNING:
+            return StartContainerResponse(success=False, response=StartContainerResponseEnum.ALREADY_RUNNING)
+        case docker_manager.StartContainerResult.IMAGE_NOT_FOUND:
+            return StartContainerResponse(success=False, response=StartContainerResponseEnum.ERR_IMAGE_NOT_FOUND)
+        case docker_manager.StartContainerResult.ERROR:
+            return StartContainerResponse(success=False,
+                                          response=StartContainerResponseEnum.ERR_COULD_NOT_START_CONTAINER)
+        case _:
+            return StartContainerResponse(success=True, response=StartContainerResponseEnum.STARTED_CONTAINER)
 
 
 @deploy_router.route(event="stopContainerRequest")
-def stopContainer(message: StopContainerRequest, ws: WebSocketApp):
-    if docker_manager.get_container_status(message.containerName) != ContainerStatusEnum.RUNNING:
-        return StopContainerResponse(status=False, response=StopContainerResponseEnum.ERR_CONTAINER_NOT_RUNNING)
-
-    success = docker_manager.stop_container(message)
-    if not success:
-        return StopContainerResponse(status=False, response=StopContainerResponseEnum.ERR_OTHER)
-    return StopContainerResponse(status=True, response=StopContainerResponseEnum.STOPPED_MINING)
+def stop_container(message: StopContainerRequest, ws: WebSocketApp):
+    match docker_manager.remove_container(message.containerName):
+        case docker_manager.StopRemoveContainerResult.CONTAINER_NOT_FOUND:
+            return StopContainerResponse(status=False, response=StopContainerResponseEnum.ERR_CONTAINER_NOT_RUNNING)
+        case docker_manager.StopRemoveContainerResult.ERROR:
+            return StopContainerResponse(status=False, response=StopContainerResponseEnum.ERR_OTHER)
+        case _:
+            return StopContainerResponse(status=True, response=StopContainerResponseEnum.STOPPED_CONTAINER)

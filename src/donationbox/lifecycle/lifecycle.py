@@ -2,11 +2,12 @@ import json
 import threading
 import time
 
-
 from websocket import WebSocketApp
 
 from bright_ws import Lifecycle
 from utils.settings import settings
+import random
+from routes.status_route import status_update
 
 lifecycle = Lifecycle()
 
@@ -32,12 +33,10 @@ def on_open(ws: WebSocketApp):
 
     def print_message():
         while True:
-            time.sleep(10)
+            time.sleep(random.randint(110, 130))
+            status_update({}, ws)
 
     thread = threading.Thread(target=print_message)
-
     thread.daemon = True
 
     thread.start()
-
-
