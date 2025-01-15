@@ -107,7 +107,7 @@ def add_configuration_request(message: AddConfigurationRequest, ws: WebSocketApp
 
             for container in status.container:
                 if container.containerName == 'pluginContainer':
-                    container.statusCode = 1 if status.power_supply is None else 0
+                    container.statusCode = 101 if status.power_supply is None else 100
                     container.statusMsg = "Error" if status.power_supply is None else "Ok"
 
             ws.send(json.dumps({'event': 'statusUpdateResponse', 'data': asdict(status)}))
@@ -129,7 +129,7 @@ def add_configuration_request(message: AddConfigurationRequest, ws: WebSocketApp
     status.container.append(
         ContainerStatus(
             containerName='pluginContainer',
-            statusCode=100,
+            statusCode=102,
             statusMsg='Pending'
         )
     )
