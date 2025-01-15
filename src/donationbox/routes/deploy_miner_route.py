@@ -14,15 +14,15 @@ def start_container(message: StartContainerRequest, ws: WebSocketApp):
         case docker_manager.StartContainerResult.ALREADY_RUNNING:
             return AddErrorResponse(containerName=message.containerName,
                                     statusCode=4,
-                                    statusMsg=StartContainerResponse.ERR_container_already_running)
+                                    statusMsg=StartContainerResponseEnum.ERR_container_already_running)
         case docker_manager.StartContainerResult.IMAGE_NOT_FOUND:
             return AddErrorResponse(containerName=message.containerName,
                                     statusCode=5,
-                                    statusMsg=StartContainerResponse.ERR_image_not_found)
+                                    statusMsg=StartContainerResponseEnum.ERR_image_not_found)
         case docker_manager.StartContainerResult.ERROR:
             return AddErrorResponse(containerName=message.containerName,
                                     statusCode=6,
-                                    statusMsg=StartContainerResponse.ERR_could_not_start_container)
+                                    statusMsg=StartContainerResponseEnum.ERR_could_not_start_container)
         case _:
             return StartContainerResponse(success=True, response=StartContainerResponseEnum.STARTED_CONTAINER)
 
