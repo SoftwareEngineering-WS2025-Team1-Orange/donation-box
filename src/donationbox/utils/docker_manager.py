@@ -82,6 +82,10 @@ class DockerManager:
         except docker.errors.APIError as e:
             print(f'start_container: An error occurred: {e}', file=sys.stderr)
             return self.StartContainerResult.ERROR
+        except Exception as e:
+            print(f'stop_container: An unexpected error occurred: {e}', file=sys.stderr)
+            return self.StartContainerResult.ERROR
+
 
     def stop_container(self, container_name: str) -> StopRemoveContainerResult:
         try:
@@ -92,6 +96,9 @@ class DockerManager:
             return self.StopRemoveContainerResult.CONTAINER_NOT_FOUND
         except docker.errors.APIError as e:
             print(f'stop_container: An error occurred: {e}', file=sys.stderr)
+            return self.StopRemoveContainerResult.ERROR
+        except Exception as e:
+            print(f'stop_container: An unexpected error occurred: {e}', file=sys.stderr)
             return self.StopRemoveContainerResult.ERROR
 
     def remove_container(self, container_name: str) -> StopRemoveContainerResult:
@@ -106,6 +113,9 @@ class DockerManager:
             return self.StopRemoveContainerResult.CONTAINER_NOT_FOUND
         except docker.errors.APIError as e:
             print(f'stop_container: An error occurred: {e}', file=sys.stderr)
+            return self.StopRemoveContainerResult.ERROR
+        except Exception as e:
+            print(f'stop_container: An unexpected error occurred: {e}', file=sys.stderr)
             return self.StopRemoveContainerResult.ERROR
 
     def get_container_status(self, container_name: str) -> ContainerStatus:
