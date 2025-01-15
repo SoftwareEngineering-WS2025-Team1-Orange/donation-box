@@ -33,7 +33,7 @@ def parse_solar_status_update_response(data: str) -> SolarStatusUpdateResponse:
     )
 
 
-@status_router.route(event="statusRequest")
+@status_router.route(event="statusUpdateRequest")
 def status_update(message: dict, ws: WebSocketApp) -> StatusUpdateResponse:
     status = get_status()
     if status.power_supply is None:
