@@ -17,7 +17,7 @@ from utils import settings
 from utils.encryption import store_json_encrypted
 
 from routes.status_route import get_status
-from donationbox.dclasses import StartContainerRequest
+from dclasses import StartContainerRequest
 
 config_router = Router()
 

@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:python3.13-bookworm AS builder
+FROM ghcr.io/astral-sh/uv:python3.10-bookworm AS builder
 
 WORKDIR /app
 
@@ -14,7 +14,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-install-project --no-dev
 RUN uv pip install /app/packages/bright-ws/dist/bright_ws-*.whl
 
-FROM python:3.13-bookworm AS runner
+FROM python:3.10-bookworm AS runner
 
 RUN apt update -y && apt upgrade -y
 RUN apt-get update && apt-get install -y \

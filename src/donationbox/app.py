@@ -2,7 +2,7 @@ import json
 
 from bright_ws.config.config import BrightConfig
 from bright_ws.core.bright_ws import BrightWs
-from donationbox.routes.config_route import config_router
+from routes.config_route import config_router
 from utils import settings
 from utils.encryption import load_json_encrypted
 from utils import docker_manager
