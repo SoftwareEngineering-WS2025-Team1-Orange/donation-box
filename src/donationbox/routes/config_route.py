@@ -90,7 +90,7 @@ def add_configuration_request(message: AddConfigurationRequest, ws: WebSocketApp
                 return
 
         health_url = f"http://{settings.api_dns}:{port}/health"
-        timeout = 60
+        timeout = 180
         interval = 5
 
         assert wait_for_ok(health_url, timeout,
