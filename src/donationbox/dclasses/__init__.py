@@ -129,3 +129,10 @@ class StoredConfiguration:
     image_name: str
     port: Dict[str, str]
     plugin_configuration: Dict[str, str]
+
+
+@dataclass
+class AddErrorResponse:
+    containerName: str
+    statusCode: int
+    statusMsg: str

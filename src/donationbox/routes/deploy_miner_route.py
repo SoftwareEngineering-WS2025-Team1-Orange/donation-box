@@ -1,7 +1,7 @@
 from bright_ws import Router
 from websocket import WebSocketApp
 from dclasses import StartContainerRequest, StartContainerResponse, StopContainerRequest, StopContainerResponse, \
-    StopContainerResponseEnum, StartContainerResponseEnum
+    StopContainerResponseEnum, StartContainerResponseEnum, AddErrorResponse
 
 from utils import docker_manager
 
@@ -12,12 +12,17 @@ deploy_router = Router()
 def start_container(message: StartContainerRequest, ws: WebSocketApp):
     match docker_manager.start_container(message):
         case docker_manager.StartContainerResult.ALREADY_RUNNING:
-            return StartContainerResponse(success=False, response=StartContainerResponseEnum.ALREADY_RUNNING)
+            return AddErrorResponse(containerName=message.containerName,
+                                    statusCode=4,
+                                    statusMsg=StartContainerResponse.ERR_container_already_running)
         case docker_manager.StartContainerResult.IMAGE_NOT_FOUND:
-            return StartContainerResponse(success=False, response=StartContainerResponseEnum.ERR_IMAGE_NOT_FOUND)
+            return AddErrorResponse(containerName=message.containerName,
+                                    statusCode=5,
+                                    statusMsg=StartContainerResponse.ERR_image_not_found)
         case docker_manager.StartContainerResult.ERROR:
-            return StartContainerResponse(success=False,
-                                          response=StartContainerResponseEnum.ERR_COULD_NOT_START_CONTAINER)
+            return AddErrorResponse(containerName=message.containerName,
+                                    statusCode=6,
+                                    statusMsg=StartContainerResponse.ERR_could_not_start_container)
         case _:
             return StartContainerResponse(success=True, response=StartContainerResponseEnum.STARTED_CONTAINER)
 
